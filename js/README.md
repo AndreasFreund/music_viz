@@ -4,12 +4,14 @@ The music visualizer uses VideoCapture, FFT, Custom visualizer and canvas or Wer
 
 ```mermaid
 graph LR
-    A[Video Capture & FFT] --> B[Canvas]
-    B -->|WebSerial| C[LED Matrix]
+    A[Video Capture & FFT] --> B[Visualizer]
+    B --> C[Canvas]
+    C -->|WebSerial| D[LED Matrix]
 ```
 
 ## Files
 - `../index.html` - Main file
+- `music.js` - Audio capture & FFT
 - `viz.js` - Visualizer
 - `perlin.js` - Perlin noise generator (for Visualizer)
 - `serialDisplay.js` - WebSerial output

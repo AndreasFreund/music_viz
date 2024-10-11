@@ -19,28 +19,60 @@
             object-fit: contain;
             image-rendering: pixelated;
         }
+
+        #editor {
+            height: 90vh;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        #editor .ace_gutter {
+            background: rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body>
 <canvas id="fft"></canvas>
 <button id="btn_start">Start Viz</button>
 <button id="btn_serial">Connect Serial Display</button>
+<button id="btn_toggle">Toggle Code</button>
+<button id="btn_reset" style="margin-left: 100px;">Reset Code</button>
+<div id="editor"></div>
 <script src="js/perlin.js"></script>
 <script src="js/serialDisplay.js"></script>
 <script src="js/music.js"></script>
 <script src="js/viz.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ace.js" type="text/javascript" charset="utf-8"></script>
 <script>
+    let editor = null;
+
+    function initEditor() {
+        document.getElementById("editor").innerHTML = localStorage.getItem("code") || window.draw.toString();
+        if(localStorage.getItem("code")) {
+            replaceDrawFunction(localStorage.getItem("code"));
+        }
+        editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/javascript");
+        editor.session.on('change', function (delta) {
+            let str = "" + editor.getValue();
+            localStorage.setItem("code", str);
+            replaceDrawFunction(str);
+        });
+    }
+
     window.addEventListener('load', async () => {
         // check for chromium
         if (!window.chrome) {
             alert("This page will probably not work in your browser. Please use Chrome or Edge.");
         }
+        initEditor();
         if (await serialResume()) {
             document.getElementById("btn_serial").disabled = true;
         }
     });
     document.getElementById("btn_serial").addEventListener("click", async () => {
-        if(await serialStart()){
+        if (await serialStart()) {
             document.getElementById("btn_serial").disabled = true;
         }
     });
@@ -53,9 +85,18 @@
             ctx.canvas.width = serialSize.width;
             ctx.canvas.height = serialSize.height;
             let data = nextFFT();
-            draw(ctx, data);
+            window["draw"](ctx, data);
             sendFrame(ctx);
         }, 1000 / 15);
+    });
+    document.getElementById("btn_toggle").addEventListener("click", () => {
+        document.getElementById("editor").style.display = document.getElementById("editor").style.display === "none" ? "block" : "none";
+    });
+    document.getElementById("btn_reset").addEventListener("click", () => {
+        if(confirm("Do you really want to reset the code?")){
+            window.draw = window.original_draw;
+            editor.setValue(window.draw.toString());
+        }
     });
 </script>
 </body>
