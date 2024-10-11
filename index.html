@@ -31,6 +31,10 @@
 <script src="js/viz.js"></script>
 <script>
     window.addEventListener('load', async () => {
+        // check for chromium
+        if (!window.chrome) {
+            alert("This page will probably not work in your browser. Please use Chrome or Edge.");
+        }
         if (await serialResume()) {
             document.getElementById("btn_serial").disabled = true;
         }
