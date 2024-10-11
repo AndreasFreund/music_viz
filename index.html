@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <title>Led Panel - Viz</title>
+    <style>
+        body {
+            background: black;
+            color: white;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -100;
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+            image-rendering: pixelated;
+        }
+    </style>
+</head>
+<body>
+<canvas id="fft"></canvas>
+<button id="btn_start">Start Viz</button>
+<button id="btn_serial">Connect Serial Display</button>
+<script src="js/perlin.js"></script>
+<script src="js/serialDisplay.js"></script>
+<script src="js/music.js"></script>
+<script src="js/viz.js"></script>
+<script>
+    window.addEventListener('load', async () => {
+        if (await serialResume()) {
+            document.getElementById("btn_serial").disabled = true;
+        }
+    });
+    document.getElementById("btn_serial").addEventListener("click", async () => {
+        if(await serialStart()){
+            document.getElementById("btn_serial").disabled = true;
+        }
+    });
+    document.getElementById("btn_start").addEventListener("click", async () => {
+        document.getElementById("btn_start").disabled = true;
+        await startCapture();
+        let canvas = document.getElementById("fft");
+        let ctx = canvas.getContext("2d");
+        window.setInterval(() => {
+            ctx.canvas.width = serialSize.width;
+            ctx.canvas.height = serialSize.height;
+            let data = nextFFT();
+            draw(ctx, data);
+            sendFrame(ctx);
+        }, 1000 / 15);
+    });
+</script>
+</body>
+</html>
